@@ -21,9 +21,9 @@ P_loss =      #The packet loss probability (for M/M/1/K queue). It is the ratio 
 #exponential random variable
 x = -(1/lambda1) * math.log(1 - U) 
 
-def M/M/1():
+def no_queue():
   
   
   
-def M/M/1/K():
+def infinite_queue():
   
