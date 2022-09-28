@@ -14,9 +14,13 @@ E_N = 0                         #Average number of packets in the buffer/queue
 P_idle = 0                      #The proportion of time the server is idle, i.e., no packets in the queue nor a packet is being transmitted.
 P_loss = 0                      #The packet loss probability (for M/M/1/K queue). It is the ratio of the total number of packets lost due to buffer full condition to the total number of generated packets
 
-class packet:
-    RV_A_time = 0
-    RV_size = 0
+class packet(object):
+    def __init__(RV_A_time, RV_size):
+        RV_A_time = RV_A_time
+        RV_size = RV_size
+    
+    #calculate and populate the bellow variables on creation of packet
+
     size = 0 #size in bits
     A_time = 0 #Arrival time
     S_time = 0 #Service time
@@ -33,13 +37,12 @@ def DES(size, T): #funciton holding the main DES algorithm
         packet_time = rand_return()
         tick_count+=packet_time
 
-
 def question_1():
     count = 1000
     mean = 0
     var = 0
     rand_num = 0
-    print ("NO QUEUE")
+    queue = 0
     while(count > 1):
         rand_num = rand_return()
         mean += rand_num
