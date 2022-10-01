@@ -4,7 +4,7 @@ from struct import pack
 from tabnanny import check
 
 #Defined by Qiuestion
-lambda1 = 600  #rate parameter, Average number of packets generated /arrived (packets per second)
+lambda1 = 75  #rate parameter, Average number of packets generated /arrived (packets per second)
 L = 2000          #Average length of a packet in bits.
 C = 1000000         #The transmission rate of the output link in bits per second.
 rho = L*lambda1/C         #Utilization of the queue (= input rate/service rate = L λ/C)
@@ -56,17 +56,16 @@ def DES(size_of_queue, T):
     time_of_last_check = 0
     is_empty = True
 
-    while tick_count <= T:
+    while tick_count <= T:                                  #---main loop---
         if arrival_check(tick_count, current_packet):
             if len(queue) < size_of_queue:
                 add_to_queue(current_packet, tick_count)
             else:
                 packets_lost += 1
-                print("---PACKET LOST--- Size of queue", len(queue))
-
+                #print("---PACKET LOST--- Size of queue", len(queue))
 
             is_empty = False
-            current_packet = rand_return(tick_count)
+            current_packet = rand_return(tick_count) #create new packet, assuming the current one has "arrived"
             num_of_packets += 1
             average_arrival_time += current_packet.RV_A_length
             average_service_time += current_packet.RV_length
@@ -81,9 +80,6 @@ def DES(size_of_queue, T):
         if is_empty:
             P_idle += tick_increment
 
-        #calculate E[N], P_idle, P_loss
-        #if not queue:
-        #    P_idle += tick_increment
         tick_count += tick_increment
     
     P_idle = P_idle/T
@@ -94,11 +90,9 @@ def DES(size_of_queue, T):
 
     #print("E[n]: ", average_queue_size_sum/observe_count) #Question 3a and 6a
     #print(P_idle) #Question 3b
-    print("num of losses: ", packets_lost)
-    print("total num of packets: ", num_of_packets)
-    print(P_loss) #Question 6b
-
-
+    #print("num of losses: ", packets_lost)
+    #print("total num of packets: ", num_of_packets)
+    #print(P_loss) #Question 6b
 
 
 def arrival_check(tick_count, packet):
@@ -144,12 +138,12 @@ def question_1():
     count = 1000
     mean = 0
     var = 0
-    rand_num = 0
+    rand_num = rand_return(0)
     queue = 0
     while count > 1:
-        rand_num = rand_return()
-        mean += rand_num
-        var = var + pow(rand_num - 1/lambda1, 2) 
+        rand_num = rand_return(0)
+        mean += rand_num.A_time
+        var = var + pow(rand_num.A_time - 1/lambda1, 2) 
         count -= 1
     print ("Expected mean: ", 1/lambda1)
     print ("Mean: ", mean/1000)
@@ -158,4 +152,4 @@ def question_1():
 
 #question_1()    
 #DES(100, 2)
-DES(10, 100)
+#DES(50, 100)
