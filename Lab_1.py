@@ -186,11 +186,13 @@ elif question_state == "3":
     for x in range(8):
         find_parameters (125 + 50*x)
         network_sim(math.inf, 100)
-        #print("For rho = ", round(0.25 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
-        print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
+        print("For rho = ", round(0.25 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
+        #print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
 
 elif question_state == "4":
+    find_parameters (600)
     network_sim(math.inf, 100)
+    print("For rho = ", 1.2, " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
 
 elif question_state == "5": #explain finite queue design - produces exmple timestamps and outputs metrics
     find_parameters (750)
