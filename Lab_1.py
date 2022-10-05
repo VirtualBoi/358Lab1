@@ -19,7 +19,34 @@ P_idle = 0                      #The proportion of time the server is idle, i.e.
 P_loss = 0                      #The packet loss probability (for M/M/1/K queue). It is the ratio of the total number of packets lost due to buffer full condition to the total number of generated packets
 
 #debugging vars, get rid of for final version
-question_state = sys.argv[1] #keeps track of what question we want to run 
+run_time = 100
+question_state = ""
+
+if len(sys.argv) != 3:
+    print("Please use appropriate arguments (refer to lab report)")
+    sys.exit()
+
+else:
+    question_state = sys.argv[1] #keeps track of what question we want to run 
+
+    if sys.argv[2] == "50":
+        run_time = 50
+
+    elif sys.argv[2] == "100":
+        run_time = 100
+
+    elif sys.argv[2] == "150":
+        run_time = 150
+
+    elif sys.argv[2] == "200":
+        run_time = 200
+    
+    else:
+        print("Please enter a valid run time argument (50, 100, 150, 200). EX: 'py Lab_1.py X 100'")
+        sys.exit()
+
+print("The simulation will have a execution time of: ", run_time)
+
 observe_count = 0
 average_arrival_time = 0
 average_service_time = 0
@@ -174,7 +201,7 @@ if question_state == "1":
     print ("Variance           ",  var/1000)
 
 elif question_state == "2": #explain infinite queue design - produces exmple timestamps and outputs metrics
-    network_sim(math.inf, 100)
+    network_sim(math.inf, run_time)
     print("-------------end of sim-------------")
     print("total num of packets: ", num_of_packets)
     print("average arrival wait time: ", average_arrival_time/num_of_packets)
@@ -185,18 +212,18 @@ elif question_state == "2": #explain infinite queue design - produces exmple tim
 elif question_state == "3":
     for x in range(8):
         find_parameters (125 + 50*x)
-        network_sim(math.inf, 100)
+        network_sim(math.inf, run_time)
         print("For rho = ", round(0.25 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
-        #print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
+        print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
 
 elif question_state == "4":
     find_parameters (600)
-    network_sim(math.inf, 100)
+    network_sim(math.inf, run_time)
     print("For rho = ", 1.2, " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
 
 elif question_state == "5": #explain finite queue design - produces exmple timestamps and outputs metrics
     find_parameters (750)
-    network_sim(10, 100)
+    network_sim(10, run_time)
     print("-------------end of sim-------------")
     print("number of packets lost: ", packets_lost)
     print("total num of packets:   ", num_of_packets)
@@ -206,25 +233,25 @@ elif question_state == "6":
     print("For queue of 10...")
     for x in range(11):
         find_parameters (250 + 50*x)
-        network_sim(10, 100)
+        network_sim(10, run_time)
         print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
         #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
 
     print("For queue of 25...")
     for x in range(11):
         find_parameters (250 + 50*x)
-        network_sim(25, 100)
+        network_sim(25, run_time)
         print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
         #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
 
     print("For queue of 50...")
     for x in range(11):
         find_parameters (250 + 50*x)
-        network_sim(50, 100)
+        network_sim(50, run_time)
         print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
 
 elif question_state == "":
     print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3'")
 
 else:
-    print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3'")
+    print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3 XXX'")
