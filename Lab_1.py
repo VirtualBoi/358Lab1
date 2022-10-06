@@ -18,10 +18,6 @@ E_N = 0                        #Average number of packets in the buffer/queue
 P_idle = 0                     #The proportion of time the server is idle, i.e., no packets in the queue nor a packet is being transmitted.
 P_loss = 0                     #The packet loss probability (for M/M/1/K queue). It is the ratio of the total number of packets lost due to buffer full condition to the total number of generated packets
 
-#debugging vars, get rid of for final version
-run_time = 100
-question_state = ""
-
 #parameters used when deciding the run time and which question is run
 #4 options avaliable for a wide range of run times
 if len(sys.argv) != 3:
@@ -50,6 +46,8 @@ else:
 print("The simulation will have a execution time of ", run_time, " simulation ticks")
 
 #initializing counting variables
+run_time = 100
+question_state = ""
 observe_count = 0
 average_arrival_time = 0
 average_service_time = 0
@@ -59,6 +57,7 @@ num_of_packets = 0
 packets_lost = 0
 last_check_timestamp = 0
 
+#class that represents and packet
 class packet(object):
      #calculate and populate the bellow variables on creation of packet
      def __init__(self, RV_A_length, RV_length, tick_count):
@@ -68,7 +67,8 @@ class packet(object):
         self.service_length = RV_length/C        #Service time
         self.D_time = 0                          #Departure time
 
-def find_parameters(lam): #used to update parameters depending on the question #
+#used to update parameters depending on the question #
+def find_parameters(lam): 
     global lambda1
     global rho
     global alpha
@@ -79,6 +79,7 @@ def find_parameters(lam): #used to update parameters depending on the question #
     alpha = 60/((1/lambda1)/5)      #Average number of observer events per second
     check_period = (1/lambda1)/5
 
+#creates and returns packet instanc with exponentially randomly generated parameters
 def rand_return(tick_count):
     U = random.uniform(0, 1)        #uniform random variable (for arrival time)
     V = random.uniform(0, 1)        #uniform random variable (for size)
@@ -149,7 +150,6 @@ def arrival_check(tick_count, packet):
 def departure_check(tick_count, T):
 
     if queue:
-        #print ("DEPARTing.... current d time ", queue[0].D_time)
         if tick_count >= queue[0].D_time or queue[0].D_time > T:
             queue.pop(0)
             if question_state == "2" or question_state == "5":
