@@ -4,24 +4,26 @@ import sys
 from struct import pack
 from tabnanny import check
 
-#Defined by Qiuestion (default)
-lambda1 = 75  #rate parameter, Average number of packets generated /arrived (packets per second)
-L = 2000          #Average length of a packet in bits.
-C = 1000000         #The transmission rate of the output link in bits per second.
-rho = L*lambda1/C         #Utilization of the queue (= input rate/service rate = L λ/C)
-alpha = 60/((1/lambda1)/5)      #Average number of observer events per second
+#Defined by Question (default)
+lambda1 = 75                   #rate parameter, Average number of packets generated /arrived (packets per second)
+L = 2000                       #Average length of a packet in bits.
+C = 1000000                    #The transmission rate of the output link in bits per second.
+rho = L*lambda1/C              #Utilization of the queue (= input rate/service rate = L λ/C)
+alpha = 60/((1/lambda1)/5)     #Average number of observer events per second
 check_period = (1/lambda1)/5
 
 queue = []
 
-E_N = 0                         #Average number of packets in the buffer/queue
-P_idle = 0                      #The proportion of time the server is idle, i.e., no packets in the queue nor a packet is being transmitted.
-P_loss = 0                      #The packet loss probability (for M/M/1/K queue). It is the ratio of the total number of packets lost due to buffer full condition to the total number of generated packets
+E_N = 0                        #Average number of packets in the buffer/queue
+P_idle = 0                     #The proportion of time the server is idle, i.e., no packets in the queue nor a packet is being transmitted.
+P_loss = 0                     #The packet loss probability (for M/M/1/K queue). It is the ratio of the total number of packets lost due to buffer full condition to the total number of generated packets
 
 #debugging vars, get rid of for final version
 run_time = 100
 question_state = ""
 
+#parameters used when deciding the run time and which question is run
+#4 options avaliable for a wide range of run times
 if len(sys.argv) != 3:
     print("Please use appropriate arguments (refer to lab report)")
     sys.exit()
@@ -47,6 +49,7 @@ else:
 
 print("The simulation will have a execution time of ", run_time, " simulation ticks")
 
+#initializing counting variables
 observe_count = 0
 average_arrival_time = 0
 average_service_time = 0
@@ -59,11 +62,11 @@ last_check_timestamp = 0
 class packet(object):
      #calculate and populate the bellow variables on creation of packet
      def __init__(self, RV_A_length, RV_length, tick_count):
-        self.RV_A_length = RV_A_length #random time taken to arrive
-        self.RV_length = RV_length #random length of packet (bits)
-        self.A_time = tick_count + RV_A_length #Arrival time
-        self.service_length = RV_length/C #Service time
-        self.D_time = 0 #Departure time
+        self.RV_A_length = RV_A_length           #random time taken to arrive
+        self.RV_length = RV_length               #random length of packet (bits)
+        self.A_time = tick_count + RV_A_length   #Arrival time
+        self.service_length = RV_length/C        #Service time
+        self.D_time = 0                          #Departure time
 
 def find_parameters(lam): #used to update parameters depending on the question #
     global lambda1
@@ -71,18 +74,18 @@ def find_parameters(lam): #used to update parameters depending on the question #
     global alpha
     global check_period
 
-    lambda1 = lam  #rate parameter, Average number of packets generated /arrived (packets per second)
-    rho = L*lambda1/C         #Utilization of the queue (= input rate/service rate = L λ/C)
+    lambda1 = lam                   #rate parameter, Average number of packets generated /arrived (packets per second)
+    rho = L*lambda1/C               #Utilization of the queue (= input rate/service rate = L λ/C)
     alpha = 60/((1/lambda1)/5)      #Average number of observer events per second
     check_period = (1/lambda1)/5
 
 def rand_return(tick_count):
-    U = random.uniform(0, 1) #uniform random variable (for arrival time)
-    V = random.uniform(0, 1) #uniform random variable (for size)
+    U = random.uniform(0, 1)        #uniform random variable (for arrival time)
+    V = random.uniform(0, 1)        #uniform random variable (for size)
     return packet(-(1/lambda1) * math.log(1 - U), -(1/(1/L)) * math.log(1 - V), tick_count)
 
-#funciton holding the main network_sim algorithm    T = # of ticks -> how long the fn runs (T = 100)
-#                                                size = size of queue
+#funciton holding the main network_sim algorithm T = # of ticks -> how long the fn runs (T = 100)
+#size = size of queue
 def network_sim(size_of_queue, T): 
     global num_of_packets
     global average_arrival_time
@@ -133,6 +136,7 @@ def network_sim(size_of_queue, T):
     P_idle = P_idle/T
     P_loss = packets_lost/num_of_packets
 
+#function checks and marks the time of arrival of a packet
 def arrival_check(tick_count, packet):
     if tick_count >= packet.A_time:
         if question_state == "2" or question_state == "5":
@@ -141,6 +145,7 @@ def arrival_check(tick_count, packet):
 
     return False
 
+#function checks and marks the time of departure, also removes packet from the queue
 def departure_check(tick_count, T):
 
     if queue:
@@ -153,6 +158,8 @@ def departure_check(tick_count, T):
 
     return (False)
 
+#function performs an oversvation at set times to see the state of a packet 
+#keeps track of queue length at that time
 def observer_check(tick_count, time_of_last_check):
     global average_queue_size_sum
     global observe_count
@@ -166,6 +173,8 @@ def observer_check(tick_count, time_of_last_check):
     
     return(False)
 
+#fucntion adds a packet to teh queue
+#keeps track of total time to clear queue and average service time
 def add_to_queue(packet, tick_count):
     global average_service_time
 
@@ -179,6 +188,8 @@ def add_to_queue(packet, tick_count):
     queue[-1].D_time = sum
     average_service_time += queue[-1].D_time - tick_count
 
+    
+ #below are all the individual questions answered as required in the report   
 if question_state == "1":
     count = 1000
     mean = 0
