@@ -45,7 +45,7 @@ else:
         print("Please enter a valid run time argument (50, 100, 150, 200). EX: 'py Lab_1.py X 100'")
         sys.exit()
 
-print("The simulation will have a execution time of: ", run_time)
+print("The simulation will have a execution time of ", run_time, " simulation ticks")
 
 observe_count = 0
 average_arrival_time = 0
@@ -214,7 +214,7 @@ elif question_state == "3":
         find_parameters (125 + 50*x)
         network_sim(math.inf, run_time)
         print("For rho = ", round(0.25 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
-        print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
+        #print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
 
 elif question_state == "4":
     find_parameters (600)
@@ -249,6 +249,7 @@ elif question_state == "6":
         find_parameters (250 + 50*x)
         network_sim(50, run_time)
         print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
+        #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
 
 elif question_state == "":
     print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3'")
