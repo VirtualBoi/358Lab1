@@ -5,18 +5,31 @@ from struct import pack
 from tabnanny import check
 
 #Defined by Question (default)
-lambda1 = 75                   #rate parameter, Average number of packets generated /arrived (packets per second)
+lambda1 = 75.0                 #rate parameter, Average number of packets generated /arrived (packets per second)
 L = 2000                       #Average length of a packet in bits.
-C = 1000000                    #The transmission rate of the output link in bits per second.
-rho = L*lambda1/C              #Utilization of the queue (= input rate/service rate = L λ/C)
-alpha = 60/((1/lambda1)/5)     #Average number of observer events per second
-check_period = (1/lambda1)/5
+C = 1000000.0                  #The transmission rate of the output link in bits per second.
+rho = L*lambda1/float(C)              #Utilization of the queue (= input rate/service rate = L lambda/C)
+alpha = 0
+alpha = 60/float(((1/float(lambda1))/5))     #Average number of observer events per second
+check_period = (1/float(lambda1))/5
 
 queue = []
 
 E_N = 0                        #Average number of packets in the buffer/queue
 P_idle = 0                     #The proportion of time the server is idle, i.e., no packets in the queue nor a packet is being transmitted.
 P_loss = 0                     #The packet loss probability (for M/M/1/K queue). It is the ratio of the total number of packets lost due to buffer full condition to the total number of generated packets
+
+#initializing counting variables
+run_time = 100
+question_state = ""
+observe_count = 0
+average_arrival_time = 0
+average_service_time = 0
+average_packet_size = 0
+average_queue_size_sum = 0
+num_of_packets = 0
+packets_lost = 0
+last_check_timestamp = 0
 
 #parameters used when deciding the run time and which question is run
 #4 options avaliable for a wide range of run times
@@ -45,18 +58,6 @@ else:
 
 print("The simulation will have a execution time of ", run_time, " simulation ticks")
 
-#initializing counting variables
-run_time = 100
-question_state = ""
-observe_count = 0
-average_arrival_time = 0
-average_service_time = 0
-average_packet_size = 0
-average_queue_size_sum = 0
-num_of_packets = 0
-packets_lost = 0
-last_check_timestamp = 0
-
 #class that represents and packet
 class packet(object):
      #calculate and populate the bellow variables on creation of packet
@@ -64,7 +65,7 @@ class packet(object):
         self.RV_A_length = RV_A_length           #random time taken to arrive
         self.RV_length = RV_length               #random length of packet (bits)
         self.A_time = tick_count + RV_A_length   #Arrival time
-        self.service_length = RV_length/C        #Service time
+        self.service_length = RV_length/float(C) #Service time
         self.D_time = 0                          #Departure time
 
 #used to update parameters depending on the question #
@@ -75,15 +76,15 @@ def find_parameters(lam):
     global check_period
 
     lambda1 = lam                   #rate parameter, Average number of packets generated /arrived (packets per second)
-    rho = L*lambda1/C               #Utilization of the queue (= input rate/service rate = L λ/C)
-    alpha = 60/((1/lambda1)/5)      #Average number of observer events per second
-    check_period = (1/lambda1)/5
+    rho = L*float(lambda1)/float(C)               #Utilization of the queue (= input rate/service rate = L lambda/C)
+    alpha = 60/((1/float(lambda1))/5)      #Average number of observer events per second
+    check_period = (1/float(lambda1))/5
 
 #creates and returns packet instanc with exponentially randomly generated parameters
 def rand_return(tick_count):
     U = random.uniform(0, 1)        #uniform random variable (for arrival time)
     V = random.uniform(0, 1)        #uniform random variable (for size)
-    return packet(-(1/lambda1) * math.log(1 - U), -(1/(1/L)) * math.log(1 - V), tick_count)
+    return packet(-(1/float(lambda1)) * math.log(1 - U), -(1/float((1/float(L)))) * math.log(1 - V), tick_count)
 
 #funciton holding the main network_sim algorithm T = # of ticks -> how long the fn runs (T = 100)
 #size = size of queue
@@ -92,16 +93,30 @@ def network_sim(size_of_queue, T):
     global average_arrival_time
     global average_service_time
     global average_packet_size
+    global observe_count
+    global average_queue_size_sum
     global E_N
     global P_idle
     global P_loss
     global packets_lost
 
     tick_count = 0
+    num_of_packets = 0
+    average_arrival_time = 0
+    average_service_time = 0
+    average_packet_size = 0
+    observe_count = 0
+    average_queue_size_sum = 0
+    E_N = 0
+    P_idle = 0
+    P_loss = 0
+    packets_lost = 0
+
     tick_increment = 0.00001
     current_packet = rand_return(0)
     time_of_last_check = 0
     is_empty = True
+    E_N = 0
 
     while tick_count <= T:                                  #---main loop---
         if arrival_check(tick_count, current_packet):
@@ -129,13 +144,10 @@ def network_sim(size_of_queue, T):
             P_idle += tick_increment
 
         tick_count += tick_increment
-    
-    E_N = average_queue_size_sum/observe_count
-    #print ("#obs: ", observe_count)
-    #print ("que sum: ", average_queue_size_sum)
-    #print ("en: ", E_N)
-    P_idle = P_idle/T
-    P_loss = packets_lost/num_of_packets
+    E_N = average_queue_size_sum/float(observe_count)
+    P_idle = P_idle/float(T)
+    P_loss = packets_lost/float(num_of_packets)
+
 
 #function checks and marks the time of arrival of a packet
 def arrival_check(tick_count, packet):
@@ -188,82 +200,85 @@ def add_to_queue(packet, tick_count):
     queue[-1].D_time = sum
     average_service_time += queue[-1].D_time - tick_count
 
-    
- #below are all the individual questions answered as required in the report   
-if question_state == "1":
-    count = 1000
-    mean = 0
-    var = 0
-    rand_num = rand_return(0)
-
-    while count > 1: #main loop - creates the specified number of randomly gnerated 
-                     #packets with exponentially distrobuted arrival times
+def main():
+    #below are all the individual questions answered as required in the report   
+    if question_state == "1":
+        count = 1000
+        mean = 0
+        var = 0
         rand_num = rand_return(0)
 
-        #sums all arrival times for the mean and varriance calculation
-        mean += rand_num.A_time
-        var = var + pow(rand_num.A_time - 1/lambda1, 2) 
-        count -= 1
+        while count > 1: #main loop - creates the specified number of randomly gnerated 
+                        #packets with exponentially distrobuted arrival times
+            rand_num = rand_return(0)
 
-    #outputs the theoretical and experimental mean and varriance
-    print ("Expected mean:     ", 1/lambda1)
-    print ("Mean:              ", mean/1000)
-    print ("Expected variance: ", 1/(lambda1**2))
-    print ("Variance           ",  var/1000)
+            #sums all arrival times for the mean and varriance calculation
+            mean += rand_num.A_time
+            var = var + pow(rand_num.A_time - 1/float(lambda1), 2) 
+            count -= 1
 
-elif question_state == "2": #explain infinite queue design - produces exmple timestamps and outputs metrics
-    network_sim(math.inf, run_time)
-    print("-------------end of sim-------------")
-    print("total num of packets: ", num_of_packets)
-    print("average arrival wait time: ", average_arrival_time/num_of_packets)
-    print("average service wait time: ", average_service_time/num_of_packets)
-    print("average packet size (bits): ", average_packet_size/num_of_packets)
-    print("check - arrival ratio: ", observe_count/num_of_packets)
+        #outputs the theoretical and experimental mean and varriance
+        print ("Expected mean:     ", 1/float(lambda1))
+        print ("Mean:              ", mean/1000)
+        print ("Expected variance: ", 1/(float(lambda1)**2))
+        print ("Variance           ",  var/1000)
 
-elif question_state == "3":
-    for x in range(8):
-        find_parameters (125 + 50*x)
-        network_sim(math.inf, run_time)
-        print("For rho = ", round(0.25 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
-        #print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
+    elif question_state == "2": #explain infinite queue design - produces exmple timestamps and outputs metrics
+        network_sim(float('inf'), run_time)
+        print("-------------end of sim-------------")
+        print("total num of packets: ", num_of_packets)
+        print("average arrival wait time: ", average_arrival_time/float(num_of_packets))
+        print("average service wait time: ", average_service_time/float(num_of_packets))
+        print("average packet size (bits): ", average_packet_size/float(num_of_packets))
+        print("check - arrival ratio: ", observe_count/float(num_of_packets))
 
-elif question_state == "4":
-    find_parameters (600)
-    network_sim(math.inf, run_time)
-    print("For rho = ", 1.2, " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
+    elif question_state == "3":
+        for x in range(8):
+            find_parameters (125 + 50*x)
+            network_sim(float('inf'), run_time)
+            print("For rho = ", round(0.25 + 0.1*x, 2), " - E[n]: ", round(E_N, 5), " - P_idle: ", P_idle)
+            #print(round(0.25 + 0.1*x, 2), ",", round(E_N, 2), ",", P_idle)
 
-elif question_state == "5": #explain finite queue design - produces exmple timestamps and outputs metrics
-    find_parameters (750)
-    network_sim(10, run_time)
-    print("-------------end of sim-------------")
-    print("number of packets lost: ", packets_lost)
-    print("total num of packets:   ", num_of_packets)
-    print("P_loss:                 ", P_loss)
+    elif question_state == "4":
+        find_parameters (600)
+        network_sim(float('inf'), run_time)
+        print("For rho = ", 1.2, " - E[n]: ", round(E_N, 2), " - P_idle: ", P_idle)
 
-elif question_state == "6":
-    print("For queue of 10...")
-    for x in range(11):
-        find_parameters (250 + 50*x)
+    elif question_state == "5": #explain finite queue design - produces exmple timestamps and outputs metrics
+        find_parameters (750)
         network_sim(10, run_time)
-        print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
-        #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
+        print("-------------end of sim-------------")
+        print("number of packets lost: ", packets_lost)
+        print("total num of packets:   ", num_of_packets)
+        print("P_loss:                 ", P_loss)
 
-    print("For queue of 25...")
-    for x in range(11):
-        find_parameters (250 + 50*x)
-        network_sim(25, run_time)
-        print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
-        #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
+    elif question_state == "6":
+        print("For queue of 10...")
+        for x in range(11):
+            find_parameters (250 + 50*x)
+            network_sim(10, run_time)
+            print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 5), " - P_idle: ", P_loss)
+            #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
 
-    print("For queue of 50...")
-    for x in range(11):
-        find_parameters (250 + 50*x)
-        network_sim(50, run_time)
-        print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 2), " - P_idle: ", P_loss)
-        #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
+        print("For queue of 25...")
+        for x in range(11):
+            find_parameters (250 + 50*x)
+            network_sim(25, run_time)
+            print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 5), " - P_idle: ", P_loss)
+            #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
 
-elif question_state == "":
-    print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3'")
+        print("For queue of 50...")
+        for x in range(11):
+            find_parameters (250 + 50*x)
+            network_sim(50, run_time)
+            print("For rho = ", round(0.5 + 0.1*x, 2), " - E[n]: ", round(E_N, 5), " - P_idle: ", P_loss)
+            #print(round(0.5 + 0.1*x, 2), ",", round(E_N, 2), ",", P_loss)
 
-else:
-    print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3 XXX'")
+    elif question_state == "":
+        print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3'")
+
+    else:
+        print("Please enter a valid Q# argument (1 - 6). EX: 'py Lab_1.py 3 XXX'")
+
+if __name__ == "__main__":
+    main()
